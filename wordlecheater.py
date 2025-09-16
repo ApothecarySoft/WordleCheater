@@ -38,13 +38,12 @@ def getPattern(patternString, existingPattern):
             specialCharCount += 1
         elif char.isalpha():
             if char.islower():
-                mustContain.add(charLower)
                 existingPattern[idx].setMisplaced(charLower)
             else:
-                if charLower in mustNotContain:
-                    mustNotContain.remove(charLower)
-                mustContain.add(charLower)
                 existingPattern[idx].setAbsolute(charLower)
+            if charLower in mustNotContain:
+                mustNotContain.remove(charLower)
+            mustContain.add(charLower)
     return existingPattern
 
 def patternToRegex(pattern):
