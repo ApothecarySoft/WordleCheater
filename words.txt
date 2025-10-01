@@ -5756,3 +5756,4 @@ rumba
 biffy
 pupal
 midge
+fritz
