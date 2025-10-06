@@ -21,29 +21,23 @@ class Place:
     def getCharacters(self):
         return "".join(self.characters).lower()
 
-def getPattern(patternString, existingPattern):
-    banNextChar = False
-    specialCharCount = 0
+def getPattern(wordIn, patternIn, existingPattern):
     containsAtMost = {chr(a): 5 for a in range(ord('a'), ord('z') + 1)}
     containsAtLeast = {chr(a): 0 for a in range(ord('a'), ord('z') + 1)}
-    for i, char in enumerate(patternString):
-        idx = i - specialCharCount
+    for i, char in enumerate(wordIn):
         charLower = char.lower()
-        if banNextChar:
+        severity = patternIn[i]
+        if severity == 0:
             if containsAtLeast[charLower] == 0:
                 containsAtMost[charLower] = 0
             else:
                 containsAtMost[charLower] = containsAtLeast[charLower]
-                existingPattern[idx].setMisplaced(charLower)
-            banNextChar = False
-        elif char == '!':
-            banNextChar = True
-            specialCharCount += 1
-        elif char.isalpha():
-            if char.islower():
-                existingPattern[idx].setMisplaced(charLower)
+                existingPattern[i].setMisplaced(charLower)
+        else:
+            if severity == 1:
+                existingPattern[i].setMisplaced(charLower)
             else:
-                existingPattern[idx].setAbsolute(charLower)
+                existingPattern[i].setAbsolute(charLower)
             containsAtLeast[charLower] += 1
             containsAtMost[charLower] = max(containsAtLeast[charLower], containsAtMost[charLower])
     return existingPattern, containsAtLeast, containsAtMost
@@ -73,13 +67,17 @@ containsAtLeast = {chr(a): 0 for a in range(ord('a'), ord('z') + 1)}
 userIn = ""
 
 while(True):
-    userIn = input("Add your next pattern or type exit\nblack char: !char\nyellow char: lowercase char\ngreen char: uppercase char\n")
+    userIn = input("Enter a word or type \"exit\"\n")
 
     if userIn.lower() == "exit":
         exit()
 
-    patternIn = userIn.strip()
-    patternStructure, newLeast, newMost = getPattern(patternIn, patternStructure)
+    wordIn = userIn.strip()
+
+    userIn = input("Enter the pattern\n0 for grey, 1 for yellow, 2 for green\nex: 02110\n")
+    patternIn = [int(a) for a in list(userIn.strip())]
+    
+    patternStructure, newLeast, newMost = getPattern(wordIn, patternIn, patternStructure)
     containsAtLeast = {a: max(x, containsAtLeast[a]) for (a, x) in newLeast.items()}
     containsAtMost = {a: min(x, containsAtMost[a]) for (a, x) in newMost.items()}
     regex = patternToRegex(patternStructure)
