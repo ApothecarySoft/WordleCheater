@@ -24,13 +24,16 @@ class Place:
 def getPattern(patternString, existingPattern):
     banNextChar = False
     specialCharCount = 0
+    containsAtMost = {chr(a): 5 for a in range(ord('a'), ord('z') + 1)}
+    containsAtLeast = {chr(a): 0 for a in range(ord('a'), ord('z') + 1)}
     for i, char in enumerate(patternString):
         idx = i - specialCharCount
         charLower = char.lower()
         if banNextChar:
-            if charLower not in mustContain:
-                mustNotContain.add(charLower)
+            if containsAtLeast[charLower] == 0:
+                containsAtMost[charLower] = 0
             else:
+                containsAtMost[charLower] = containsAtLeast[charLower]
                 existingPattern[idx].setMisplaced(charLower)
             banNextChar = False
         elif char == '!':
@@ -41,10 +44,9 @@ def getPattern(patternString, existingPattern):
                 existingPattern[idx].setMisplaced(charLower)
             else:
                 existingPattern[idx].setAbsolute(charLower)
-            if charLower in mustNotContain:
-                mustNotContain.remove(charLower)
-            mustContain.add(charLower)
-    return existingPattern
+            containsAtLeast[charLower] += 1
+            containsAtMost[charLower] = max(containsAtLeast[charLower], containsAtMost[charLower])
+    return existingPattern, containsAtLeast, containsAtMost
 
 def patternToRegex(pattern):
     regex = r""
@@ -64,9 +66,9 @@ with open('words.txt', 'r') as file:
 
 random.shuffle(lines)
 
-mustContain = set()
-mustNotContain = set()
 patternStructure = [Place() for i in range(5)]
+containsAtMost = {chr(a): 5 for a in range(ord('a'), ord('z') + 1)}
+containsAtLeast = {chr(a): 0 for a in range(ord('a'), ord('z') + 1)}
 
 userIn = ""
 
@@ -77,10 +79,12 @@ while(True):
         exit()
 
     patternIn = userIn.strip()
-    patternStructure = getPattern(patternIn, patternStructure)
+    patternStructure, newLeast, newMost = getPattern(patternIn, patternStructure)
+    containsAtLeast = {a: max(x, containsAtLeast[a]) for (a, x) in newLeast.items()}
+    containsAtMost = {a: min(x, containsAtMost[a]) for (a, x) in newMost.items()}
     regex = patternToRegex(patternStructure)
-    filteredLines = [line for line in lines if (all(ch in line for ch in mustContain) and re.search(regex, line) and all(ch not in line for ch in mustNotContain))]
+    filteredLines = [line for line in lines if (all(line.count(a) >= x for (a, x) in containsAtLeast.items()) and re.search(regex, line) and all(line.count(a) <= x for (a, x) in containsAtMost.items()))]
     print(regex)
-    print(mustContain)
-    print(mustNotContain)
+    print(containsAtLeast)
+    print(containsAtMost)
     print(*filteredLines, sep='\n')
