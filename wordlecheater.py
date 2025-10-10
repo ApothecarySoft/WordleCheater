@@ -53,6 +53,7 @@ def patternToRegex(pattern):
             regex += val.getCharacters()
     return regex
 
+test = True if len(sys.argv) > 1 and sys.argv[1] == "-t" else False
 
 lines = []
 with open('words.txt', 'r') as file:
@@ -66,23 +67,29 @@ containsAtLeast = {chr(a): 0 for a in range(ord('a'), ord('z') + 1)}
 
 userIn = ""
 
+if test:
+    print(lines[0])
+
 while(True):
-    userIn = input("Enter a word or type \"exit\"\n")
+    userIn = input("" if test else "Enter a word or type \"exit\"\n")
 
     if userIn.lower() == "exit":
         exit()
 
-    wordIn = userIn.strip()
+    wordIn = ''.join(char for char in userIn.strip().lower() if char.isalpha())
 
-    userIn = input("Enter the pattern\n0 for grey, 1 for yellow, 2 for green\nex: 02110\n")
-    patternIn = [int(a) for a in list(userIn.strip())]
+    userIn = input("" if test else "Enter the pattern\n0 for grey, 1 for yellow, 2 for green\nex: 02110\n")
+    patternIn = [int(a) for a in list(userIn.strip()) if a.isdecimal()]
     
     patternStructure, newLeast, newMost = getPattern(wordIn, patternIn, patternStructure)
     containsAtLeast = {a: max(x, containsAtLeast[a]) for (a, x) in newLeast.items()}
     containsAtMost = {a: min(x, containsAtMost[a]) for (a, x) in newMost.items()}
     regex = patternToRegex(patternStructure)
     filteredLines = [line for line in lines if (all(line.count(a) >= x for (a, x) in containsAtLeast.items()) and re.search(regex, line) and all(line.count(a) <= x for (a, x) in containsAtMost.items()))]
-    print(regex)
-    print(containsAtLeast)
-    print(containsAtMost)
-    print(*filteredLines, sep='\n')
+    if not test:
+        print(regex)
+        print(containsAtLeast)
+        print(containsAtMost)
+        print(*filteredLines, sep='\n')
+    else:
+        print(filteredLines[0], flush=True)
