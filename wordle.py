@@ -1,14 +1,14 @@
 import random
 import sys
 
-test = True if sys.argv[1] == "-t" else False
+test = True if len(sys.argv) > 1 and sys.argv[1] == "-t" else False
 
 lines = []
 with open('words.txt', 'r') as file:
     lines = [line.lower().strip() for line in file.readlines()]
 
 word = random.choice(lines)
-print(word, flush=True)
+#print(word, flush=True)
 
 guessCounter = 0
 
@@ -41,4 +41,4 @@ while(True):
 if test:
     print(guessCounter, flush=True)
 else:
-    print("you guessed it!")
+    print(f"you guessed it in {guessCounter}")

@@ -53,7 +53,7 @@ def patternToRegex(pattern):
             regex += val.getCharacters()
     return regex
 
-test = True if sys.argv[1] == "-t" else False
+test = True if len(sys.argv) > 1 and sys.argv[1] == "-t" else False
 
 lines = []
 with open('words.txt', 'r') as file:
